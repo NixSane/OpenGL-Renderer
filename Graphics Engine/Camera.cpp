@@ -2,11 +2,22 @@
 
 Camera::Camera() 
 {
-	m_camera_speed = 3.0f;
-	m_cam_pos = glm::vec3(0.0f, 0.0f, 0.0f);
+	worldTransform = glm::mat4(1.0f);
+	viewTransform = glm::mat4(1.0f);
+	projectionTransform = glm::mat4(1.0f);
+	projectionViewTransform = glm::mat4(1.0f);
 };
 
-Camera::~Camera() {};
+Camera::Camera(glm::vec3 position, float fieldOfView, float aspectRatio, float near, float far)
+{
+	setPosition(position);
+	setPerspective(fieldOfView, aspectRatio, near, far);
+	projectionViewTransform = projectionTransform * viewTransform;
+}
+
+Camera::~Camera() 
+{
+};
 
 // Returns the Camera's position and orientation in World Space
 glm::mat4 Camera::getWorldTransform()
@@ -32,17 +43,23 @@ glm::mat4 Camera::getProjectionView()
 	return projectionViewTransform;
 }
 
+// Set the camera's field of view
 void Camera::setPerspective(float fieldOfView, float aspectRatio, float near, float far)
 {
-	
+	projectionTransform = glm::perspective(glm::radians(fieldOfView), aspectRatio, near, far);
 }
 
 void Camera::setPosition(glm::vec3 position)
 {
-	m_cam_pos = position;
+	worldTransform = glm::translate(worldTransform, position);
 }
 
 void Camera::update(float deltatime)
 {
 	
+}
+
+void Camera::setLookAt(glm::vec3 from, glm::vec3 to, glm::vec3 up)
+{
+	viewTransform = glm::lookAt(from, to, up);
 }

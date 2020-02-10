@@ -7,6 +7,7 @@ class Camera
 {
 public:
 	Camera();
+	Camera(glm::vec3 position, float fieldOfView, float aspectRation, float near, float far);
 	~Camera();
 
 	// Getters
@@ -17,19 +18,16 @@ public:
 
 	// Setters
 	void setPerspective(float fieldOfView, float aspectRatio, float near, float far);
-	void setLookAt(glm::vec3 from, glm::vec3 to, glm::vec3 up) {};
+	void setLookAt(glm::vec3 from, glm::vec3 to, glm::vec3 up);
 	void setPosition(glm::vec3 position);
 	
 	// Update
 	void update(float deltatime);
 
 private:
-	glm::mat4 worldTransform = glm::mat4();
-	glm::mat4 viewTransform = glm::mat4();
-	glm::mat4 projectionTransform = glm::mat4();
-	glm::mat4 projectionViewTransform = glm::mat4();
-
-	float m_camera_speed = 0;
-	glm::vec3 m_cam_pos = glm::vec3();
+	glm::mat4 worldTransform = glm::mat4(1.0f);
+	glm::mat4 viewTransform = glm::mat4(1.0f);
+	glm::mat4 projectionTransform = glm::mat4(1.0f);
+	glm::mat4 projectionViewTransform = glm::mat4(1.0f);
 };
 
