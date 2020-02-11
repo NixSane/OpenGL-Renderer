@@ -4,46 +4,89 @@
 #include "ext.hpp"
 #include "glfw3.h"
 
-#include "Camera.h"
+#include "FlyCamera.h"
 
 #include <fstream>
 #include <sstream>
 
 using uint = unsigned int;
 
-Camera my_camera = Camera(glm::vec3(0.0f, 0.0f, 3.0f), 1.507f, 16.0f / 9.0f, 0.2f, 50.0f);
+FlyCamera my_camera = FlyCamera(2.0f);
 
-///*** Camera ***/
-//glm::vec3 camera_pos = glm::vec3(0.0f, 0.0f, 3.0f); // Where the Camera is
-//glm::vec3 camera__target = glm::vec3(0.0f, 0.0f, 0.0f); // Just where the camera is focused on
-//glm::vec3 camera__direction = glm::normalize(camera_pos - camera__direction); // Direction is the opposite of the real direction Camera is facing
-//
-//glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f); // World Axis Up vector
-//
-///** Camera transform **/
-//glm::vec3 camera_right = glm::normalize(glm::cross(up, camera__direction));
-//glm::vec3 camera_up = glm::cross(camera__direction, camera_right);
-//glm::vec3 camera_front = glm::vec3(0.0f, 0.0f, -1.0f);
-//
-///** Camera View **/
-//glm::mat4 view;
+/*** Camera ***/
+glm::vec3 camera_pos = glm::vec3(0.0f, 0.0f, 3.0f); // Where the Camera is
+glm::vec3 camera__target = glm::vec3(0.0f, 0.0f, 0.0f); // Just where the camera is focused on
+glm::vec3 camera__direction = glm::normalize(camera_pos - camera__direction); // Direction is the opposite of the real direction Camera is facing
+
+glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f); // World Axis Up vector
+
+/** Camera transform **/
+glm::vec3 camera_right = glm::normalize(glm::cross(up, camera__direction));
+glm::vec3 camera_up = glm::cross(camera__direction, camera_right);
+glm::vec3 camera_front = glm::vec3(0.0f, 0.0f, -1.0f);
+
+/** Camera View **/
+glm::mat4 view;
 
 float deltaTime = 0.0f, lastframe = 0.0f;
 float currentFrame;
 
+/* Rotation */
+glm::vec3 direction;
+float yaw = -90.0f;
+float pitch;
+
 // Camera Input
-//void processInput(GLFWwindow* window)
-//{
-//	const float camera_speed = 2.5f * deltaTime;
-//	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-//		camera_pos += camera_speed * camera_front;
-//	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-//		camera_pos -= camera_speed * camera_front;
-//	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-//		camera_pos -= glm::normalize(glm::cross(camera_front, camera_up)) * camera_speed;
-//	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-//		camera_pos += glm::normalize(glm::cross(camera_front, camera_up)) * camera_speed;
-//}
+void processInput(GLFWwindow* window)
+{
+	const float camera_speed = 2.5f * deltaTime;
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		camera_pos += camera_speed * camera_front;
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		camera_pos -= camera_speed * camera_front;
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		camera_pos -= glm::normalize(glm::cross(camera_front, camera_up)) * camera_speed;
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		camera_pos += glm::normalize(glm::cross(camera_front, camera_up)) * camera_speed;
+}
+
+double mouse_x, mouse_y;
+float x_offset, y_offset;
+float lastX = 400, lastY = 300;
+bool first_mouse = true;
+
+// Mouse Input
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+	if (first_mouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		first_mouse = false;
+	}
+
+	x_offset = xpos - lastX;
+	y_offset = lastY - ypos;
+	lastX = xpos;
+	lastY = ypos;
+
+	const float sensitivity = 0.05f;
+	x_offset *= sensitivity;
+	y_offset *= sensitivity;
+
+	yaw += x_offset;
+	pitch += y_offset;
+
+	if (pitch > 89.0f)
+		pitch = 89.0f;
+	if (pitch < -89.0f)
+		pitch = -89.0f;
+
+	direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	direction.y = sin(glm::radians(pitch));
+	direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	camera_front = glm::normalize(direction);
+}
 
 
 int main()
@@ -67,6 +110,8 @@ int main()
 		glfwTerminate();
 		return -3;
 	}
+	// Last mouse point
+	glfwSetCursorPosCallback(window, mouse_callback);
 	
 	auto major = ogl_GetMajorVersion();
 	auto minor = ogl_GetMinorVersion();
@@ -122,9 +167,12 @@ int main()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	/* CAMERA */
-	//glm::mat4 projection = glm::perspective(1.507f, 16 / 9.0f, 0.2f, 50.0f);
-	////glm::mat4 view = glm::lookAt(glm::vec3(0, 0, 1), glm::vec3(0,0,0), glm::vec3(0, 1, 0));
+	glm::mat4 projection = glm::perspective(1.507f, 16 / 9.0f, 0.2f, 50.0f);
+	glm::mat4 view = glm::lookAt(glm::vec3(0, 0, 1), glm::vec3(0,0,0), glm::vec3(0, 1, 0));
 	glm::mat4 model = glm::mat4(1.0f);
+
+	my_camera.setPosition(camera_pos);
+	my_camera.setPerspective(90.0f, 16.0f / 9.0f, 0.2f, 50.0f);
 
 	// glm::mat4 pvm = projection * view * model;
 
@@ -244,6 +292,8 @@ int main()
 	}
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	
 
 	// Keep window open until the ESCAPE key is pressed
@@ -261,29 +311,28 @@ int main()
 		lastframe = currentFrame;
 
 		/** Camera Input **/
-	/*	processInput(window); */
-	    
-		model = glm::rotate(model, 0.016f, glm::vec3(0, 1, 0));
+		/*processInput(window);*/
+	
+		/*model = glm::rotate(model, 0.016f, glm::vec3(0, 1, 0));
 
-		// view = glm::lookAt(camera_pos, camera_pos + camera_front, camera_up);
-		
+		view = glm::lookAt(camera_pos, camera_pos + camera_front, camera_up);*/
+		my_camera.update(deltaTime);
 
-		//glm::mat4 pv = projection * view;
-		
+		glm::mat4 pv = projection * view;
+
 		glm::vec4 color = glm::vec4(0.9f, 0.5f, 0.5f, 0.5f);
 
 		glUseProgram(shader_program_ID);
 		auto uniform_location = glGetUniformLocation(shader_program_ID, "projection_view_matrix");
 		glUniformMatrix4fv(uniform_location, 1, false, glm::value_ptr(my_camera.getProjectionView()));
 		uniform_location = glGetUniformLocation(shader_program_ID, "model_matrix");
-		glUniformMatrix4fv(uniform_location, 1, false, glm::value_ptr(model));
+		glUniformMatrix4fv(uniform_location, 1, false, glm::value_ptr(my_camera.getWorldTransform()));
 		uniform_location = glGetUniformLocation(shader_program_ID, "color");
 		glUniform4fv(uniform_location,1, glm::value_ptr(color));
 
 		glBindVertexArray(VAO);
 		//glDrawArrays(GL_TRIANGLES, 0, number_of_verts);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,0);
-
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
