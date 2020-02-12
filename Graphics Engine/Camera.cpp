@@ -3,14 +3,14 @@
 Camera::Camera() 
 {
 	setPerspective(90.0f, 16.0f / 9.0f, 0.2f, 50.0f);
-	setLookAt(glm::vec3(0.0, 0.0, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 10.0f, 0.0f));
+	setLookAt(glm::vec3(0.0, 0.0, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 };
 
 Camera::Camera(glm::vec3 position, float fieldOfView, float aspectRatio, float near, float far)
 {
 	setPosition(position);
 	setPerspective(fieldOfView, aspectRatio, near, far);
-	setLookAt(position, glm::vec3(0.0, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	setLookAt(position, glm::vec3(0.0, 0.0f, 0.0f));
 }
 
 Camera::~Camera() 
@@ -60,9 +60,9 @@ void Camera::update(float deltatime)
 	
 }
 
-void Camera::setLookAt(glm::vec3 from, glm::vec3 to, glm::vec3 up)
+void Camera::setLookAt(glm::vec3 from, glm::vec3 to)
 {
-	viewTransform = glm::lookAt(from, to, up);
+	viewTransform = glm::lookAt(from, to, glm::vec3(0.0f,1.0f,0.0f));
 	worldTransform = glm::inverse(viewTransform);
 	updateProjectionViewTransform();
 }

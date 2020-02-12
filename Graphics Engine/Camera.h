@@ -18,7 +18,7 @@ public:
 
 	// Setters
 	void setPerspective(float fieldOfView, float aspectRatio, float near, float far);
-	void setLookAt(glm::vec3 from, glm::vec3 to, glm::vec3 up);
+	void setLookAt(glm::vec3 from, glm::vec3 to);
 	void setPosition(glm::vec3 position);
 	
 	// Update
