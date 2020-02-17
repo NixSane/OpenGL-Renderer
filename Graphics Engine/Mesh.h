@@ -21,7 +21,7 @@ public:
 	virtual void draw();
 
 protected:
-	uint tri_count;
+	uint tri_count; // Number of triangles
 	uint vao, vbo, ibo;
 };
 

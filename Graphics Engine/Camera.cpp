@@ -2,6 +2,7 @@
 
 Camera::Camera() 
 {
+
 	setPerspective(90.0f, 16.0f / 9.0f, 0.2f, 50.0f);
 	setLookAt(glm::vec3(0.0, 0.0, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 };
@@ -44,7 +45,7 @@ glm::mat4 Camera::getProjectionView()
 // Set the camera's field of view
 void Camera::setPerspective(float fieldOfView, float aspectRatio, float near, float far)
 {
-	projectionTransform = glm::perspective(glm::radians(fieldOfView), aspectRatio, near, far);
+	projectionTransform = glm::perspective(1.57f, aspectRatio, near, far);
 	updateProjectionViewTransform();
 }
 
@@ -69,6 +70,6 @@ void Camera::setLookAt(glm::vec3 from, glm::vec3 to)
 
 void Camera::updateProjectionViewTransform()
 {
-	viewTransform = glm::inverse(worldTransform);
+	//viewTransform = glm::inverse(worldTransform);
 	projectionViewTransform = getProjection() * getView();
 }

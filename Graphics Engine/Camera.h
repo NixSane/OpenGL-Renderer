@@ -29,6 +29,6 @@ protected:
 	glm::mat4 worldTransform = glm::mat4(1.0f);
 	glm::mat4 viewTransform = glm::mat4(1.0f);
 	glm::mat4 projectionTransform = glm::mat4(1.0f);
-	glm::mat4 projectionViewTransform = viewTransform * projectionTransform;
+	glm::mat4 projectionViewTransform = glm::mat4(1.0f);
 };
 

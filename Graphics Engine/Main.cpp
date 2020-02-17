@@ -5,16 +5,17 @@
 #include "glfw3.h"
 
 #include "FlyCamera.h"
-
-#include <fstream>
-#include <sstream>
+#include "ShaderLoader.h"
+#include "OBJMesh.h"
 
 using uint = unsigned int;
 
-FlyCamera my_camera = FlyCamera(glm::vec3(0.0f, 0.0f, 50.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+FlyCamera my_camera = FlyCamera(glm::vec3(10, 10, 10), glm::vec3(0.0f, 0.0f, 0.0f));
 
 float deltaTime = 0.0f, lastframe = 0.0f;
 float currentFrame;
+
+
 
 int main()
 {
@@ -66,13 +67,12 @@ int main()
 	};
 
 
-
 	//for (int i = 0; i < 6; i++) 
 	//{
 	//	vertices[i] = (glm::vec3(pvm * glm::vec4(vertices[i], 1)));
 	//}
 
-	/*** CREATE AND 'LOAD' MESH ***/
+	/*** CREATE AND 'LOAD' MESH ***/ //
 	uint VAO;
 	uint VBO;
 	uint IBO;
@@ -98,129 +98,20 @@ int main()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-	/* CAMERA */
-	//my_camera.setPosition(camera_pos);
-	//my_camera.setPerspective(90.0f, 16.0f / 9.0f, 0.2f, 50.0f);
 	glm::mat4 model = glm::mat4(1.0f);
 
-	// glm::mat4 pvm = projection * view * model;
+	// Load Shaders
+	ShaderLoader myShader("..\\Shaders\\simple_vertex.glsl",
+		"..\\Shaders\\simple_frag.glsl");
 
-	uint vertex_shader_ID = 0;
-	uint fragment_shader_ID = 0;
-	uint shader_program_ID = 0;
-
-	/* Vertex Shader */
-	// Load Shader
-	std::string shader_data;
-	std::ifstream in_file_stream("..\\Shaders\\simple_vertex.glsl", std::ifstream::in);
-
-	// Load the source into a string for compilation
-	std::stringstream string_stream;
-	if (in_file_stream.is_open())
-	{
-		string_stream << in_file_stream.rdbuf();
-		shader_data = string_stream.str();
-		in_file_stream.close();
-	}
-	else
-	{
-		// File wasn't able to be opened
-		throw std::exception("SHADER_SOURCE COULD NOT BE FOUND!");
-	}
-
-	// Allocate space for Shader program
-	vertex_shader_ID = glCreateShader(GL_VERTEX_SHADER);
-	// Convert to raw data
-	const char* data = shader_data.c_str();
-	// Send in the char* to shader location
-	glShaderSource(vertex_shader_ID, 1, (const GLchar**)&data, 0);
-	// Build
-	glCompileShader(vertex_shader_ID);
-
-	// Did it work?
-	// Check the shader compiled
-	GLint success = GL_FALSE;
-	glGetShaderiv(vertex_shader_ID, GL_COMPILE_STATUS, &success);
-	if (success == GL_FALSE)
-	{
-		std::cout << "Vertex Shader Failed\n";
-	}
-	
-
-	/* Fragment Shader */
-	// Load Shader
-	//std::string frag_data;
-	std::ifstream frag_file_stream("..\\Shaders\\simple_frag.glsl", std::ifstream::in);
-	// std::stringstream frag_string_stream;
-
-	// Load the source into a string for compilation
-	std::stringstream frag_stream;
-	if (frag_file_stream.is_open())
-	{
-		frag_stream << frag_file_stream.rdbuf();
-		shader_data = frag_stream.str();
-		frag_file_stream.close();
-	}
-	else
-	{
-		// File wasn't able to be opened
-		throw std::exception("SHADER_SOURCE COULD NOT BE FOUND!\n");
-	}
-
-	// Allocate space for Shader program
-	fragment_shader_ID = glCreateShader(GL_FRAGMENT_SHADER);
-	// Convert to raw data
-	data = shader_data.c_str();
-	// Send in the char* to shader location
-	glShaderSource(fragment_shader_ID, 1, (const GLchar**)&data, 0);
-	// Build
-	glCompileShader(fragment_shader_ID);
-
-	// Did it work?
-	// Check the shader compiled
-	success = GL_FALSE;
-	glGetShaderiv(fragment_shader_ID, GL_COMPILE_STATUS, &success);
-	if (success == GL_FALSE)
-	{
-		std::cout << "Fragment Shader Failed\n";
-	}
-	
-
-	// Finally link here
-	// Create the new shader program
-	shader_program_ID = glCreateProgram();
-
-	// Attach both shaders by ID and type
-	glAttachShader(shader_program_ID, vertex_shader_ID);
-	glAttachShader(shader_program_ID, fragment_shader_ID);
-
+	// Load OBJ
+	aie::OBJMesh my_object;
+	my_object.load("..\\stanford\\Mech_Blockout.obj", false, false);
 
 	glPolygonMode(GL_FRONT, GL_LINE);
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glLinkProgram(shader_program_ID);
-
-	success = GL_FALSE;
-	glGetProgramiv(shader_program_ID, GL_LINK_STATUS, &success);
-	if (!success)
-	{
-		// Get the length of the OpenGL error message
-		GLint log_length = 0;
-		glGetShaderiv(shader_program_ID, GL_INFO_LOG_LENGTH, &log_length);
-		// Create the error buffer
-		char* log = new char[log_length];
-		// Copy the error from the buffer
-		glGetProgramInfoLog(shader_program_ID, log_length, 0, log);
-
-		// Create the error message
-		std::string error_message(log);
-		error_message += "SHADER_FAILED_TO_COMPILE";
-		printf(error_message.c_str());
-		// Clean up anyway
-
-		delete[] log;
-	}
-
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	
@@ -240,18 +131,19 @@ int main()
 		lastframe = currentFrame;
 
 		model = glm::rotate(model, 0.016f, glm::vec3(0, 1, 0));
+		my_object.draw(false);
 
 		my_camera.update(deltaTime);
 
 		glm::vec4 color = glm::vec4(0.9f, 0.5f, 0.5f, 0.5f);
 
-		glUseProgram(shader_program_ID);
-		auto uniform_location = glGetUniformLocation(shader_program_ID, "projection_view_matrix");
+		myShader.use();
+		auto uniform_location = glGetUniformLocation(myShader.GetID(), "projection_view_matrix");
 		glUniformMatrix4fv(uniform_location, 1, false, glm::value_ptr(my_camera.getProjectionView()));
-		uniform_location = glGetUniformLocation(shader_program_ID, "model_matrix");
+		uniform_location = glGetUniformLocation(myShader.GetID(), "model_matrix");
 		glUniformMatrix4fv(uniform_location, 1, false, glm::value_ptr(model));
-		uniform_location = glGetUniformLocation(shader_program_ID, "color");
-		glUniform4fv(uniform_location,1, glm::value_ptr(color));
+		uniform_location = glGetUniformLocation(myShader.GetID(), "final_color");
+		// glUniform4fv(uniform_location,1, glm::value_ptr(color));
 
 		glBindVertexArray(VAO);
 		//glDrawArrays(GL_TRIANGLES, 0, number_of_verts);
