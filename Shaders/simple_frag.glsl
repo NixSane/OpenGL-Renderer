@@ -1,10 +1,11 @@
 #version 450
 
-uniform vec4 color = vec4(0.4f,0.8f,0.2f,1);
-
-out vec4 final_colour;
+uniform sampler2D diffuse_texture;
+uniform float time;
+in vec2 final_texture_coordinates;
+out vec4 final_color;
 
 void main()
 {
-	final_colour = color;
+	final_color = texture(diffuse_texture, final_texture_coordinates);
 }
