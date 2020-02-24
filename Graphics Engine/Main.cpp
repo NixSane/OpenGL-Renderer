@@ -7,6 +7,7 @@
 #include "FlyCamera.h"
 #include "ShaderLoader.h"
 #include "OBJMesh.h"
+#include "Mesh.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -18,11 +19,18 @@ FlyCamera my_camera = FlyCamera(glm::vec3(10, 10, 10), glm::vec3(0.0f, 0.0f, 0.0
 float deltaTime = 0.0f, lastframe = 0.0f;
 float currentFrame;
 
-struct Vertex
+struct  Light
 {
-	glm::vec3 position;
-	glm::vec2 uv;
+	glm::vec3 direction;
 };
+
+Light m_light;
+
+//struct Vertex
+//{
+//	glm::vec3 position;
+//	glm::vec2 uv;
+//};
 
 int main()
 {
@@ -52,14 +60,31 @@ int main()
 	auto minor = ogl_GetMinorVersion();
 	printf("GL: %i.%i\n", major, minor);
 
-	Vertex vertices_better[] =
-	{
-		/*  Position  */			/*  UV    */	
-		glm::vec3(-0.5f, 0.5f, 0.0f),  glm::vec2(1.0f,1.0f), // top right
-		glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(1.0f,0.0f), // bottom right
-		glm::vec3(0.5f, -0.5f, 0.0f),  glm::vec2(0.0f,0.0f), // bottom left
-		glm::vec3(0.5f, 0.5f, 0.0f),   glm::vec2(0.0f,1.0f) // top left
-	};
+	//Vertex vertices_better[] =
+	//{
+	//	/*  Position  */			/*  UV    */	
+	//	glm::vec3(-0.5f, 0.5f, 0.0f),  glm::vec2(1.0f,1.0f), // top right
+	//	glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(1.0f,0.0f), // bottom right
+	//	glm::vec3(0.5f, -0.5f, 0.0f),  glm::vec2(0.0f,0.0f), // bottom left
+	//	glm::vec3(0.5f, 0.5f, 0.0f),   glm::vec2(0.0f,1.0f) // top left
+	//};
+
+	Vertex normal_vertex[4];
+	normal_vertex[0].position = glm::vec3(-0.5f, 0.5f, 0.0f);
+	normal_vertex[1].position = glm::vec3(-0.5f, -0.5f, 0.0f);
+	normal_vertex[2].position = glm::vec3(0.5f, -0.5f, 0.0f);
+	normal_vertex[3].position = glm::vec3(0.5f, 0.5f, 0.0f);
+
+	normal_vertex[0].uv = glm::vec2(1.0f, 1.0f);
+	normal_vertex[1].uv = glm::vec2(1.0f, 0.0f);
+	normal_vertex[2].uv = glm::vec2(0.0f, 0.0f);
+	normal_vertex[3].uv = glm::vec2(0.0f, 1.0f);
+
+	normal_vertex[0].normal = { 0,1,0,0 };
+	normal_vertex[1].normal = { 0,1,0,0 };
+	normal_vertex[2].normal = { 0,1,0,0 };
+	normal_vertex[3].normal = { 0,1,0,0 };
+
 
 	// Mesh Data
 	glm::vec3 vertices[] =
@@ -89,36 +114,40 @@ int main()
 	//	vertices[i] = (glm::vec3(pvm * glm::vec4(vertices[i], 1)));
 	//}
 
-	/*** CREATE AND 'LOAD' MESH ***/ //
-	uint VAO;
-	uint VBO;
-	uint IBO;
+	///*** CREATE AND 'LOAD' MESH ***/ //
+	//uint VAO;
+	//uint VBO;
+	//uint IBO;
+	//
+	///** Generate IDs to access the objects **/
+	//glGenVertexArrays(1, &VAO);
+	//glGenBuffers(1, &VBO);
+	//glGenBuffers(1, &IBO);
+
+	///** Bind the Objects and buffers that are going to be drawn **/
+	///** And allocate the geometry and construction data in the current object being drawn **/
+	//glBindVertexArray(VAO);
+	//glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	//glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(glm::vec3), &vertices_better[0], GL_STATIC_DRAW);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index_buffer), index_buffer, GL_STATIC_DRAW);
+
+	//glEnableVertexAttribArray(0);
+	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 0);
+
+	//glEnableVertexAttribArray(1);
+	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
+	///*glEnableVertexAttribArray(1);
+	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)(1 *sizeof(glm::vec3)));*/
+
+	//// Reset once everything is allocated
+	//glBindVertexArray(0);
+	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	Mesh some_mesh = Mesh(normal_vertex, index_buffer);
+
 	
-	/** Generate IDs to access the objects **/
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &IBO);
-
-	/** Bind the Objects and buffers that are going to be drawn **/
-	/** And allocate the geometry and construction data in the current object being drawn **/
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(glm::vec3), &vertices_better[0], GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index_buffer), index_buffer, GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 0);
-
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
-	/*glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)(1 *sizeof(glm::vec3)));*/
-
-	// Reset once everything is allocated
-	glBindVertexArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	/*** Texture Buffer ***/
 
@@ -137,7 +166,7 @@ int main()
 	
 	stbi_image_free(data);
 
-	// glBindTexture(GL_TEXTURE_2D, m_texture);
+	 glBindTexture(GL_TEXTURE_2D, m_texture);
 
 
 	/*** Texture Buffer ***/
@@ -150,12 +179,12 @@ int main()
 
 	// Load OBJ
 	aie::OBJMesh my_object;
-	my_object.load("..\\stanford\\Mech_Blockout.obj", false, false);
+	my_object.load("..\\stanford\\Bunny.obj", false, false);
 
-	glPolygonMode(GL_FRONT, GL_LINE);
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	//glPolygonMode(GL_FRONT, GL_LINE);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	
-//	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	
@@ -174,6 +203,11 @@ int main()
 		deltaTime = currentFrame - lastframe;
 		lastframe = currentFrame;
 
+		float time = glfwGetTime();
+
+		// rotate light
+		m_light.direction = glm::normalize(glm::vec3(glm::cos(time * 2), glm::sin(time * 2), 0));
+
 		/*model = glm::rotate(model, 0.0f, glm::vec3(0, 1, 0));*/
 		my_object.draw(false);
 
@@ -187,9 +221,15 @@ int main()
 		uniform_location = glGetUniformLocation(myShader.GetID(), "model_matrix");
 		glUniformMatrix4fv(uniform_location, 1, false, glm::value_ptr(model));
 		uniform_location = glGetUniformLocation(myShader.GetID(), "final_color");
+
+		uniform_location = glGetUniformLocation(myShader.GetID(), "light_direction");
+		glUniform3fv(uniform_location, 1, glm::value_ptr(m_light.direction));
+
+		uniform_location = glGetUniformLocation(myShader.GetID(), "normal_matrix");
+		glUniformMatrix4fv(uniform_location, 1, false, glm::value_ptr(glm::inverseTranspose(glm::mat3(model))));
 		// glUniform4fv(uniform_location,1, glm::value_ptr(color));
 
-		glBindVertexArray(VAO);
+		glBindVertexArray(some_mesh.getVAO());
 		//glDrawArrays(GL_TRIANGLES, 0, number_of_verts);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,0);
 
@@ -198,8 +238,7 @@ int main()
 	}
 
 	// We won't need these anymore
-	glDeleteBuffers(1, &VAO);
-	glDeleteBuffers(1, &VBO);
+	some_mesh.~Mesh();
 
 	glfwTerminate();
 	return 0;
