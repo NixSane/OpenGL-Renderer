@@ -144,7 +144,7 @@ int main()
 	glm::vec3 ambientLight = { 0.25f, 0.25f, 0.25f };
 
 	glm::vec3 ambientMatLight = { 0.25f, 0.25f, 0.25f };
-	glm::vec3 dif_mat_Light = { 1.0f, 1.0f, 0.0f };
+	glm::vec3 dif_mat_Light = { 0.25f, 0.75f, 0.0f };
 	glm::vec3 specular_mat_Light = { 1.0f, 1.0f, 0.0f };
 	
 
@@ -180,7 +180,7 @@ int main()
 
 	// Load OBJ
 	aie::OBJMesh my_object;
-	my_object.load("..\\stanford\\Bunny.obj", false, false);
+	my_object.load("..\\stanford\\Dragon.obj", false, false);
 
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);

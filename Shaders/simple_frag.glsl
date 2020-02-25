@@ -13,7 +13,7 @@ uniform vec3 light_direction;
 uniform vec3 ambient_mat_light; // Ambient material lighting
 uniform vec3 diffuse_mat_light; // Diffuse material lighting
 uniform vec3 specular_mat_light; // specular material lighting
-uniform float specular_power; // material specular power
+uniform float specular_power = 10.0f; // material specular power
 
 uniform sampler2D diffuse_texture;
 uniform vec3 cameraPosition;

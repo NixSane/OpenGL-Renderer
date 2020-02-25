@@ -4,13 +4,13 @@ layout(location = 0) in vec3 local_position;
 layout(location = 1) in vec4 normal;
 layout(location = 2) in vec2 uv;
 
-uniform mat4 projection_view_matrix;
+uniform mat4 projection_view_matrix; // Camera view pyramid
+uniform mat4 model_matrix; // Model local matrix for world coordinates
 
-uniform mat4 model_matrix; 
 
-out vec4 v_position;
-out vec3 v_normal;
-out vec2 final_texture_coordinates;
+out vec4 v_position; // Position of the camera
+out vec3 v_normal; // the normals of the model's surfaces
+out vec2 final_texture_coordinates; // Texture coordinates
 
 // Matrix to transform normals
 uniform mat3 normal_matrix;
