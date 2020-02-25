@@ -10,15 +10,14 @@ using uint = unsigned int;
 struct Vertex
 {
 	glm::vec3 position;
-	glm::vec2 uv;
 	glm::vec4 normal;
+	glm::vec2 uv;
 };
 
 class Mesh
 {
 public:
 
-	Mesh();
 	Mesh(Vertex a_vertices[], int a_index[]);
 	virtual ~Mesh();
 

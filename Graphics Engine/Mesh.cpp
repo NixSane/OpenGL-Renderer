@@ -1,17 +1,6 @@
 #include "Mesh.h"
 
 
-Mesh::Mesh()
-{
-	// Check if this mesh hasn't been initialised
-	if (vao != 1)
-	{
-		/** Generate IDs to access the objects **/
-		glGenVertexArrays(1, &vao);
-		glGenBuffers(1, &vbo);
-		glGenBuffers(1, &ibo);
-	}
-}
 
 Mesh::Mesh(Vertex a_vertices[], int a_index[])
 {
@@ -19,13 +8,13 @@ Mesh::Mesh(Vertex a_vertices[], int a_index[])
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
 	glGenBuffers(1, &ibo);
-	
+
 
 	/** Bind the Objects and buffers that are going to be drawn **/
 	/** And allocate the geometry and construction data in the current object being drawn **/
 	glBindVertexArray(vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex), &a_vertices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(Vertex), &a_vertices[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(a_index), a_index, GL_STATIC_DRAW);
 
@@ -33,13 +22,13 @@ Mesh::Mesh(Vertex a_vertices[], int a_index[])
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
 
-	// UV
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)8);
-
 	// Normal
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)8);
+
+	// UV
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 4, GL_FLOAT, GL_TRUE, sizeof(Vertex), (void*)16);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)16);
 
 
 	// Reset once everything is allocated

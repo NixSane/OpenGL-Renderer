@@ -42,6 +42,12 @@ glm::mat4 Camera::getProjectionView()
 	return projectionViewTransform;
 }
 
+// Camera position
+glm::vec3 Camera::getPosition()
+{
+	return glm::vec3(worldTransform[3]);
+}
+
 // Set the camera's field of view
 void Camera::setPerspective(float fieldOfView, float aspectRatio, float near, float far)
 {

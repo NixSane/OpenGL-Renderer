@@ -19,18 +19,14 @@ FlyCamera my_camera = FlyCamera(glm::vec3(10, 10, 10), glm::vec3(0.0f, 0.0f, 0.0
 float deltaTime = 0.0f, lastframe = 0.0f;
 float currentFrame;
 
-struct  Light
+struct Light
 {
 	glm::vec3 direction;
+	glm::vec3 diffuse;
+	glm::vec3 specular;
 };
 
 Light m_light;
-
-//struct Vertex
-//{
-//	glm::vec3 position;
-//	glm::vec2 uv;
-//};
 
 int main()
 {
@@ -60,30 +56,24 @@ int main()
 	auto minor = ogl_GetMinorVersion();
 	printf("GL: %i.%i\n", major, minor);
 
-	//Vertex vertices_better[] =
-	//{
-	//	/*  Position  */			/*  UV    */	
-	//	glm::vec3(-0.5f, 0.5f, 0.0f),  glm::vec2(1.0f,1.0f), // top right
-	//	glm::vec3(-0.5f, -0.5f, 0.0f), glm::vec2(1.0f,0.0f), // bottom right
-	//	glm::vec3(0.5f, -0.5f, 0.0f),  glm::vec2(0.0f,0.0f), // bottom left
-	//	glm::vec3(0.5f, 0.5f, 0.0f),   glm::vec2(0.0f,1.0f) // top left
-	//};
 
 	Vertex normal_vertex[4];
-	normal_vertex[0].position = glm::vec3(-0.5f, 0.5f, 0.0f);
-	normal_vertex[1].position = glm::vec3(-0.5f, -0.5f, 0.0f);
-	normal_vertex[2].position = glm::vec3(0.5f, -0.5f, 0.0f);
-	normal_vertex[3].position = glm::vec3(0.5f, 0.5f, 0.0f);
+
+	normal_vertex[0].position = glm::vec3(-20.0f, -15.0f, 20.0f);
+	normal_vertex[1].position = glm::vec3(20.0f, -15.0f, 20.0f);
+	normal_vertex[2].position = glm::vec3(20.0f, -15.0f, -20.0f);
+	normal_vertex[3].position = glm::vec3(-20.0f, -15.0f, -20.0f);
+
+	normal_vertex[0].normal = { 0,1,0,0 };
+	normal_vertex[1].normal = { 0,1,0,0 };
+	normal_vertex[2].normal = { 0,1,0,0 };
+	normal_vertex[3].normal = { 0,1,0,0 };
 
 	normal_vertex[0].uv = glm::vec2(1.0f, 1.0f);
 	normal_vertex[1].uv = glm::vec2(1.0f, 0.0f);
 	normal_vertex[2].uv = glm::vec2(0.0f, 0.0f);
 	normal_vertex[3].uv = glm::vec2(0.0f, 1.0f);
 
-	normal_vertex[0].normal = { 0,1,0,0 };
-	normal_vertex[1].normal = { 0,1,0,0 };
-	normal_vertex[2].normal = { 0,1,0,0 };
-	normal_vertex[3].normal = { 0,1,0,0 };
 
 
 	// Mesh Data
@@ -115,38 +105,47 @@ int main()
 	//}
 
 	///*** CREATE AND 'LOAD' MESH ***/ //
-	//uint VAO;
-	//uint VBO;
-	//uint IBO;
+	uint VAO;
+	uint VBO;
+	uint IBO;
 	//
 	///** Generate IDs to access the objects **/
-	//glGenVertexArrays(1, &VAO);
-	//glGenBuffers(1, &VBO);
-	//glGenBuffers(1, &IBO);
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &IBO);
 
 	///** Bind the Objects and buffers that are going to be drawn **/
 	///** And allocate the geometry and construction data in the current object being drawn **/
-	//glBindVertexArray(VAO);
-	//glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	//glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(glm::vec3), &vertices_better[0], GL_STATIC_DRAW);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index_buffer), index_buffer, GL_STATIC_DRAW);
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(Vertex), &normal_vertex[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(index_buffer), index_buffer, GL_STATIC_DRAW);
 
-	//glEnableVertexAttribArray(0);
-	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), 0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
 
-	//glEnableVertexAttribArray(1);
-	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
-	///*glEnableVertexAttribArray(1);
-	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)(1 *sizeof(glm::vec3)));*/
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_TRUE, sizeof(Vertex), (void*)16);
+
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)8);
 
 	//// Reset once everything is allocated
-	//glBindVertexArray(0);
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-	Mesh some_mesh = Mesh(normal_vertex, index_buffer);
+	/*Mesh some_mesh(normal_vertex, index_buffer);*/
 
+	// Light
+	m_light.diffuse = { 1,1,0 };
+	m_light.specular = { 1,1,0 };
+	glm::vec3 ambientLight = { 0.25f, 0.25f, 0.25f };
+
+	glm::vec3 ambientMatLight = { 0.25f, 0.25f, 0.25f };
+	glm::vec3 dif_mat_Light = { 1.0f, 1.0f, 0.0f };
+	glm::vec3 specular_mat_Light = { 1.0f, 1.0f, 0.0f };
 	
 
 	/*** Texture Buffer ***/
@@ -163,11 +162,13 @@ int main()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // GL_LINEAR SAMPLE texels
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // GL_NEARESTS RETURNS just closest pixel
 
-	
+	// Set texture slot
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_texture);
+
 	stbi_image_free(data);
 
-	 glBindTexture(GL_TEXTURE_2D, m_texture);
-
+	glBindTexture(GL_TEXTURE_2D, m_texture);
 
 	/*** Texture Buffer ***/
 
@@ -183,7 +184,7 @@ int main()
 
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	
+	glEnable(GL_DEPTH_TEST);
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -211,34 +212,69 @@ int main()
 		/*model = glm::rotate(model, 0.0f, glm::vec3(0, 1, 0));*/
 		my_object.draw(false);
 
-		my_camera.update(deltaTime);
 
 		glm::vec4 color = glm::vec4(0.9f, 0.5f, 0.5f, 0.5f);
 
 		myShader.use();
+		// Camera view
 		auto uniform_location = glGetUniformLocation(myShader.GetID(), "projection_view_matrix");
 		glUniformMatrix4fv(uniform_location, 1, false, glm::value_ptr(my_camera.getProjectionView()));
+
+		// Send camera position to shader
+		uniform_location = glGetUniformLocation(myShader.GetID(), "cameraPosition");
+		glUniform3fv(uniform_location, 1, glm::value_ptr(my_camera.getPosition()));
+
+		// Model mesh and colour
 		uniform_location = glGetUniformLocation(myShader.GetID(), "model_matrix");
 		glUniformMatrix4fv(uniform_location, 1, false, glm::value_ptr(model));
-		uniform_location = glGetUniformLocation(myShader.GetID(), "final_color");
 
+		// Ambient lighting
+		uniform_location = glGetUniformLocation(myShader.GetID(), "ambient_light");
+		glUniform3fv(uniform_location, 1, glm::value_ptr(ambientLight));
+
+		// Diffuse lighting
+		uniform_location = glGetUniformLocation(myShader.GetID(), "diffuse_light");
+		glUniform3fv(uniform_location, 1, glm::value_ptr(m_light.diffuse));
+
+		// Specular lighting
+		uniform_location = glGetUniformLocation(myShader.GetID(), "specular_light");
+		glUniform3fv(uniform_location, 1, glm::value_ptr(m_light.specular));
+
+		// Ambient material lighting
+		uniform_location = glGetUniformLocation(myShader.GetID(), "ambient_mat_light");
+		glUniform3fv(uniform_location, 1, glm::value_ptr(ambientMatLight));
+
+		// Diffuse material lighting
+		uniform_location = glGetUniformLocation(myShader.GetID(), "diffuse_mat_light");
+		glUniform3fv(uniform_location, 1, glm::value_ptr(dif_mat_Light));
+
+		// Ambient material lighting
+		uniform_location = glGetUniformLocation(myShader.GetID(), "specular_mat_light");
+		glUniform3fv(uniform_location, 1, glm::value_ptr(specular_mat_Light));
+
+		// Light Direction drawing
 		uniform_location = glGetUniformLocation(myShader.GetID(), "light_direction");
 		glUniform3fv(uniform_location, 1, glm::value_ptr(m_light.direction));
 
+		// Direct lighting
 		uniform_location = glGetUniformLocation(myShader.GetID(), "normal_matrix");
-		glUniformMatrix4fv(uniform_location, 1, false, glm::value_ptr(glm::inverseTranspose(glm::mat3(model))));
-		// glUniform4fv(uniform_location,1, glm::value_ptr(color));
+		glUniformMatrix3fv(uniform_location, 1, false, glm::value_ptr(glm::inverseTranspose(glm::mat3(model))));
+		
 
-		glBindVertexArray(some_mesh.getVAO());
+		glBindVertexArray(VAO);
 		//glDrawArrays(GL_TRIANGLES, 0, number_of_verts);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,0);
+		
+		my_camera.update(deltaTime);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
 	// We won't need these anymore
-	some_mesh.~Mesh();
+	/*some_mesh.~Mesh();*/
+	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &IBO);
 
 	glfwTerminate();
 	return 0;
