@@ -12,6 +12,7 @@ struct Vertex
 	glm::vec3 position;
 	glm::vec4 normal;
 	glm::vec2 uv;
+	glm::vec4 tangent;
 };
 
 class Mesh

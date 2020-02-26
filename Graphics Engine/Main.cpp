@@ -27,6 +27,7 @@ struct Light
 };
 
 Light m_light;
+Light m_light_two;
 
 int main()
 {
@@ -139,12 +140,13 @@ int main()
 	/*Mesh some_mesh(normal_vertex, index_buffer);*/
 
 	// Light
+	m_light.direction = { 1.0f, 1.0f, 1.0f };
 	m_light.diffuse = { 1,1,0 };
 	m_light.specular = { 1,1,0 };
 	glm::vec3 ambientLight = { 0.25f, 0.25f, 0.25f };
 
-	glm::vec3 ambientMatLight = { 0.25f, 0.25f, 0.25f };
-	glm::vec3 dif_mat_Light = { 0.25f, 0.75f, 0.0f };
+	glm::vec3 ambientMatLight = { 1.0f, 1.0f, 1.0f };
+	glm::vec3 dif_mat_Light = { 1.0f, 0.75f, 0.0f };
 	glm::vec3 specular_mat_Light = { 1.0f, 1.0f, 0.0f };
 	
 
@@ -156,19 +158,17 @@ int main()
 	unsigned char* data = stbi_load("..\\Dependencies\\Textures\\Chicken_Texture.jpg", &x, &y, &n, 0);
 
 	glGenTextures(1, &m_texture);
-	glBindTexture(GL_TEXTURE_2D, m_texture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // GL_LINEAR SAMPLE texels
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // GL_NEARESTS RETURNS just closest pixel
 
 	// Set texture slot
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_texture);
 
-	stbi_image_free(data);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
-	glBindTexture(GL_TEXTURE_2D, m_texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // GL_LINEAR SAMPLE texels
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // GL_NEARESTS RETURNS just closest pixel
+
+	stbi_image_free(data);
 
 	/*** Texture Buffer ***/
 
@@ -179,8 +179,12 @@ int main()
 		"..\\Shaders\\simple_frag.glsl");
 
 	// Load OBJ
-	aie::OBJMesh my_object;
-	my_object.load("..\\stanford\\Dragon.obj", false, false);
+	aie::OBJMesh dragon_obj;
+	glm::mat4 mech_transform;
+
+
+	aie::OBJMesh obj_two;
+	dragon_obj.load("..\\stanford\\Mech_Blockout.obj", false, false);
 
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -210,7 +214,7 @@ int main()
 		m_light.direction = glm::normalize(glm::vec3(glm::cos(time * 2), glm::sin(time * 2), 0));
 
 		/*model = glm::rotate(model, 0.0f, glm::vec3(0, 1, 0));*/
-		my_object.draw(false);
+		dragon_obj.draw(false);
 
 
 		glm::vec4 color = glm::vec4(0.9f, 0.5f, 0.5f, 0.5f);
@@ -223,6 +227,8 @@ int main()
 		// Send camera position to shader
 		uniform_location = glGetUniformLocation(myShader.GetID(), "cameraPosition");
 		glUniform3fv(uniform_location, 1, glm::value_ptr(my_camera.getPosition()));
+
+	
 
 		// Model mesh and colour
 		uniform_location = glGetUniformLocation(myShader.GetID(), "model_matrix");
@@ -260,7 +266,6 @@ int main()
 		uniform_location = glGetUniformLocation(myShader.GetID(), "normal_matrix");
 		glUniformMatrix3fv(uniform_location, 1, false, glm::value_ptr(glm::inverseTranspose(glm::mat3(model))));
 		
-
 		glBindVertexArray(VAO);
 		//glDrawArrays(GL_TRIANGLES, 0, number_of_verts);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT,0);
