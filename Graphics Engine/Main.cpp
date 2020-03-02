@@ -127,10 +127,10 @@ int main()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
 
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_TRUE, sizeof(Vertex), (void*)16);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)16);
 
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)8);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)32);
 
 	//// Reset once everything is allocated
 	glBindVertexArray(0);
@@ -141,21 +141,26 @@ int main()
 
 	// Light
 	m_light.direction = { 1.0f, 1.0f, 1.0f };
-	m_light.diffuse = { 1,1,0 };
-	m_light.specular = { 1,1,0 };
-	glm::vec3 ambientLight = { 0.25f, 0.25f, 0.25f };
+	m_light.diffuse = { 1.0f, 0.0f, 0.0f };
+	m_light.specular = { 0.5f, 0.0f, 1.0f };
+	glm::vec3 ambientLight = { 0.8f, 0.8f, 0.8f };
 
-	glm::vec3 ambientMatLight = { 1.0f, 1.0f, 1.0f };
-	glm::vec3 dif_mat_Light = { 1.0f, 0.75f, 0.0f };
-	glm::vec3 specular_mat_Light = { 1.0f, 1.0f, 0.0f };
-	
+	glm::vec3 ambientMatLight = { 1.0f, 0.5f, 0.31f };
+	glm::vec3 dif_mat_Light = { 1.0f, 0.5f, 0.31f };
+	glm::vec3 specular_mat_Light = { 0.5f, 0.5f, 0.5f };
+
+	m_light_two.direction = { 0.1f, 0.5f, 0.5f };
+	m_light_two.diffuse = { 0.0f, 0.0f, 1.0f };
+	m_light_two.specular = { 0.1f, 0.5f, 0.5f };
+	glm::vec3 ambientLight_two = { 0.1f, 0.2f, 0.6f };
+
 
 	/*** Texture Buffer ***/
 
 	uint m_texture;
 	int x, y, n;
 	stbi_set_flip_vertically_on_load(true);
-	unsigned char* data = stbi_load("..\\Dependencies\\Textures\\Chicken_Texture.jpg", &x, &y, &n, 0);
+	unsigned char* data = stbi_load("..\\Dependencies\\Textures\\UVAlbedoMap_Shield.jpg", &x, &y, &n, 0);
 
 	glGenTextures(1, &m_texture);
 
@@ -163,33 +168,42 @@ int main()
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_texture);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	if (n == 3) 
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, x, y, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	}
+	else if (n == 4)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	}
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); // GL_LINEAR SAMPLE texels
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // GL_NEARESTS RETURNS just closest pixel
-
+	
 	stbi_image_free(data);
 
 	/*** Texture Buffer ***/
 
-	glm::mat4 model = glm::mat4(1.0f);
+
+	glm::mat4 model[2];
+	model[0] = glm::mat4(1.0f);
 
 	// Load Shaders
 	ShaderLoader myShader("..\\Shaders\\simple_vertex.glsl",
 		"..\\Shaders\\simple_frag.glsl");
 
 	// Load OBJ
-	aie::OBJMesh dragon_obj;
-	glm::mat4 mech_transform;
-
-
+	aie::OBJMesh obj_one;
+	
 	aie::OBJMesh obj_two;
-	dragon_obj.load("..\\stanford\\Mech_Blockout.obj", false, false);
+
+	obj_one.load("..\\stanford\\Mech_Blockout.obj", false, false);
+	obj_two.load("..\\stanford\\meshSwordShield.obj", false, false);
 
 	//glPolygonMode(GL_FRONT, GL_LINE);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glEnable(GL_DEPTH_TEST);
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	
@@ -211,10 +225,12 @@ int main()
 		float time = glfwGetTime();
 
 		// rotate light
+		// m_light_two.direction = glm::normalize(glm::vec3(0, 0, glm::sin(time * 2)));
 		m_light.direction = glm::normalize(glm::vec3(glm::cos(time * 2), glm::sin(time * 2), 0));
 
-		/*model = glm::rotate(model, 0.0f, glm::vec3(0, 1, 0));*/
-		dragon_obj.draw(false);
+		// model = glm::rotate(model, 0.016f, glm::vec3(0, 1, 0));
+		obj_one.draw(false);
+		obj_two.draw(false);
 
 
 		glm::vec4 color = glm::vec4(0.9f, 0.5f, 0.5f, 0.5f);
@@ -228,43 +244,61 @@ int main()
 		uniform_location = glGetUniformLocation(myShader.GetID(), "cameraPosition");
 		glUniform3fv(uniform_location, 1, glm::value_ptr(my_camera.getPosition()));
 
-	
+		/*glBindTexture(GL_TEXTURE_2D, m_texture);*/
 
 		// Model mesh and colour
 		uniform_location = glGetUniformLocation(myShader.GetID(), "model_matrix");
-		glUniformMatrix4fv(uniform_location, 1, false, glm::value_ptr(model));
+		glUniformMatrix4fv(uniform_location, 1, false, glm::value_ptr(model[0]));
+
+		/** First light **/
 
 		// Ambient lighting
-		uniform_location = glGetUniformLocation(myShader.GetID(), "ambient_light");
+		uniform_location = glGetUniformLocation(myShader.GetID(), "light.ambient");
 		glUniform3fv(uniform_location, 1, glm::value_ptr(ambientLight));
 
 		// Diffuse lighting
-		uniform_location = glGetUniformLocation(myShader.GetID(), "diffuse_light");
+		uniform_location = glGetUniformLocation(myShader.GetID(), "light.diffuse");
 		glUniform3fv(uniform_location, 1, glm::value_ptr(m_light.diffuse));
 
 		// Specular lighting
-		uniform_location = glGetUniformLocation(myShader.GetID(), "specular_light");
+		uniform_location = glGetUniformLocation(myShader.GetID(), "light.specular");
 		glUniform3fv(uniform_location, 1, glm::value_ptr(m_light.specular));
 
+		// Ambient lighting
+		uniform_location = glGetUniformLocation(myShader.GetID(), "second_ambient_light");
+		glUniform3fv(uniform_location, 1, glm::value_ptr(ambientLight_two));
+
+		// Diffuse lighting
+		uniform_location = glGetUniformLocation(myShader.GetID(), "second_diffuse_light");
+		glUniform3fv(uniform_location, 1, glm::value_ptr(m_light_two.diffuse));
+
+		// Specular lighting
+		uniform_location = glGetUniformLocation(myShader.GetID(), "second_specular_light");
+		glUniform3fv(uniform_location, 1, glm::value_ptr(m_light_two.specular));
+
 		// Ambient material lighting
-		uniform_location = glGetUniformLocation(myShader.GetID(), "ambient_mat_light");
+		uniform_location = glGetUniformLocation(myShader.GetID(), "material.specular");
 		glUniform3fv(uniform_location, 1, glm::value_ptr(ambientMatLight));
 
 		// Diffuse material lighting
-		uniform_location = glGetUniformLocation(myShader.GetID(), "diffuse_mat_light");
+		uniform_location = glGetUniformLocation(myShader.GetID(), "material.diffuse");
 		glUniform3fv(uniform_location, 1, glm::value_ptr(dif_mat_Light));
 
 		// Ambient material lighting
-		uniform_location = glGetUniformLocation(myShader.GetID(), "specular_mat_light");
+		uniform_location = glGetUniformLocation(myShader.GetID(), "material.specular");
 		glUniform3fv(uniform_location, 1, glm::value_ptr(specular_mat_Light));
 
 		// Light Direction drawing
 		uniform_location = glGetUniformLocation(myShader.GetID(), "light_direction");
 		glUniform3fv(uniform_location, 1, glm::value_ptr(m_light.direction));
 
+		// Seconf light direction
+		uniform_location = glGetUniformLocation(myShader.GetID(), "second_light_direction");
+		glUniform3fv(uniform_location, 1, glm::value_ptr(m_light_two.direction));
+
 		// Direct lighting
 		uniform_location = glGetUniformLocation(myShader.GetID(), "normal_matrix");
-		glUniformMatrix3fv(uniform_location, 1, false, glm::value_ptr(glm::inverseTranspose(glm::mat3(model))));
+		glUniformMatrix3fv(uniform_location, 1, false, glm::value_ptr(glm::inverseTranspose(glm::mat3(model[0]))));
 		
 		glBindVertexArray(VAO);
 		//glDrawArrays(GL_TRIANGLES, 0, number_of_verts);
