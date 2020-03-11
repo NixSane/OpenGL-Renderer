@@ -61,15 +61,18 @@ public:
 	size_t getMaterialCount() const { return m_materials.size();  }
 	Material& getMaterial(size_t index) { return m_materials[index];  }
 
-private:
-
-	void calculateTangents(std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
-
+	// Mesh Chunks
 	struct MeshChunk {
 		unsigned int	vao, vbo, ibo;
 		unsigned int	indexCount;
 		int				materialID;
 	};
+
+	const std::vector<MeshChunk>& getChunks() const { return m_meshChunks; };
+
+private:
+
+	void calculateTangents(std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
 
 	std::string				m_filename;
 	std::vector<MeshChunk>	m_meshChunks;

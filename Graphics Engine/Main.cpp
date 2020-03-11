@@ -127,10 +127,10 @@ int main()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
 
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)16);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(3 * sizeof(float)));
 
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)32);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(7 * sizeof(float)));
 
 	//// Reset once everything is allocated
 	glBindVertexArray(0);
@@ -151,8 +151,8 @@ int main()
 
 	m_light_two.direction = { 0.1f, 0.5f, 0.5f };
 	m_light_two.diffuse = { 0.0f, 0.0f, 1.0f };
-	m_light_two.specular = { 0.1f, 0.5f, 0.5f };
-	glm::vec3 ambientLight_two = { 0.1f, 0.2f, 0.6f };
+	m_light_two.specular = { 0.5f, 0.5f, 0.5f };
+	
 
 
 	/*** Texture Buffer ***/
@@ -185,8 +185,8 @@ int main()
 	/*** Texture Buffer ***/
 
 
-	glm::mat4 model[2];
-	model[0] = glm::mat4(1.0f);
+	glm::mat4 model;
+	model = glm::mat4(1.0f);
 
 	// Load Shaders
 	ShaderLoader myShader("..\\Shaders\\simple_vertex.glsl",
@@ -225,8 +225,7 @@ int main()
 		float time = glfwGetTime();
 
 		// rotate light
-		// m_light_two.direction = glm::normalize(glm::vec3(0, 0, glm::sin(time * 2)));
-		m_light.direction = glm::normalize(glm::vec3(glm::cos(time * 2), glm::sin(time * 2), 0));
+		// m_light.direction = glm::normalize(glm::vec3(glm::cos(time * 2), glm::sin(time * 2), 0));
 
 		// model = glm::rotate(model, 0.016f, glm::vec3(0, 1, 0));
 		obj_one.draw(false);
@@ -246,7 +245,7 @@ int main()
 
 		/*glBindTexture(GL_TEXTURE_2D, m_texture);*/
 
-		// Model mesh and colour
+		// Model, Obj transform
 		uniform_location = glGetUniformLocation(myShader.GetID(), "model_matrix");
 		glUniformMatrix4fv(uniform_location, 1, false, glm::value_ptr(model[0]));
 
@@ -264,41 +263,44 @@ int main()
 		uniform_location = glGetUniformLocation(myShader.GetID(), "light.specular");
 		glUniform3fv(uniform_location, 1, glm::value_ptr(m_light.specular));
 
-		// Ambient lighting
-		uniform_location = glGetUniformLocation(myShader.GetID(), "second_ambient_light");
-		glUniform3fv(uniform_location, 1, glm::value_ptr(ambientLight_two));
+		/** ~First light~ **/
+
+
+		/** Second Light **/
 
 		// Diffuse lighting
-		uniform_location = glGetUniformLocation(myShader.GetID(), "second_diffuse_light");
+		uniform_location = glGetUniformLocation(myShader.GetID(), "light_2.diffuse");
 		glUniform3fv(uniform_location, 1, glm::value_ptr(m_light_two.diffuse));
 
 		// Specular lighting
-		uniform_location = glGetUniformLocation(myShader.GetID(), "second_specular_light");
+		uniform_location = glGetUniformLocation(myShader.GetID(), "light_2.specular");
 		glUniform3fv(uniform_location, 1, glm::value_ptr(m_light_two.specular));
 
+		/** ~Second Light~ **/
+
 		// Ambient material lighting
-		uniform_location = glGetUniformLocation(myShader.GetID(), "material.specular");
+		uniform_location = glGetUniformLocation(myShader.GetID(), "Ka");
 		glUniform3fv(uniform_location, 1, glm::value_ptr(ambientMatLight));
 
 		// Diffuse material lighting
-		uniform_location = glGetUniformLocation(myShader.GetID(), "material.diffuse");
+		uniform_location = glGetUniformLocation(myShader.GetID(), "Kd");
 		glUniform3fv(uniform_location, 1, glm::value_ptr(dif_mat_Light));
 
 		// Ambient material lighting
-		uniform_location = glGetUniformLocation(myShader.GetID(), "material.specular");
+		uniform_location = glGetUniformLocation(myShader.GetID(), "Ks");
 		glUniform3fv(uniform_location, 1, glm::value_ptr(specular_mat_Light));
 
 		// Light Direction drawing
-		uniform_location = glGetUniformLocation(myShader.GetID(), "light_direction");
+		uniform_location = glGetUniformLocation(myShader.GetID(), "light.direction");
 		glUniform3fv(uniform_location, 1, glm::value_ptr(m_light.direction));
 
 		// Seconf light direction
-		uniform_location = glGetUniformLocation(myShader.GetID(), "second_light_direction");
+		uniform_location = glGetUniformLocation(myShader.GetID(), "light_2.direction");
 		glUniform3fv(uniform_location, 1, glm::value_ptr(m_light_two.direction));
 
 		// Direct lighting
 		uniform_location = glGetUniformLocation(myShader.GetID(), "normal_matrix");
-		glUniformMatrix3fv(uniform_location, 1, false, glm::value_ptr(glm::inverseTranspose(glm::mat3(model[0]))));
+		glUniformMatrix3fv(uniform_location, 1, false, glm::value_ptr(glm::inverseTranspose(glm::mat3(model))));
 		
 		glBindVertexArray(VAO);
 		//glDrawArrays(GL_TRIANGLES, 0, number_of_verts);
